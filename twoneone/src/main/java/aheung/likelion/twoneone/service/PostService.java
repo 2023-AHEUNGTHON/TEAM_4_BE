@@ -10,5 +10,5 @@ import org.springframework.web.multipart.MultipartFile;
 public interface PostService {
     public void createPost(PostRequestDto dto, List<MultipartFile> files, Long userId);
     public Page<PostListReturnDto> getMyPosts(Pageable pageable, String category, String tag, Long userId);
-
+    public Page<PostListReturnDto> getMySearchPosts(Pageable pageable, String keyword, Long userId);
 }

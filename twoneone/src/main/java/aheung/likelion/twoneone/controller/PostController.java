@@ -41,4 +41,10 @@ public class PostController {
         return ReturnDto.ok(postService.getMyPosts(pageable, category, tag, userId));
     }
 
+    @GetMapping("/my/posts")
+    public ReturnDto<Page<PostListReturnDto>> getMySearchPosts(@RequestParam String keyword,
+                                                               @RequestParam(name = "user_id") Long userId,
+                                                               @PageableDefault(size = 12) Pageable pageable) {
+        return ReturnDto.ok(postService.getMySearchPosts(pageable, keyword, userId));
+    }
 }

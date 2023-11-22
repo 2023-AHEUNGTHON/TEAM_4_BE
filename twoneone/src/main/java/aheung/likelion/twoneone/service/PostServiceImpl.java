@@ -15,6 +15,7 @@ import aheung.likelion.twoneone.repository.UserRepository;
 import aheung.likelion.twoneone.repository.PostRepository;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Timer;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
@@ -101,4 +102,23 @@ public class PostServiceImpl implements PostService {
         int end = Math.min((start + pageable.getPageSize()), myPosts.size());
         return new PageImpl<>(myPosts.subList(start, end), pageable, myPosts.size());
     }
+
+    @Override
+    public Page<PostListReturnDto> getMySearchPosts(Pageable pageable, String keyword, Long userId) {
+        User user = findUser(userId);
+
+        List<Post> posts = postRepository.getPostByTitleContainingAndUser(keyword, user);
+        List<PostListReturnDto> myPosts = new ArrayList<>();
+        for (Post post : posts) {
+            FileListReturnDto files = fileService.getFiles("post", post.getId());
+            myPosts.add(PostListReturnDto.toDto(post, files.getThumbnail()));
+        }
+
+        // List -> Page
+        int start = (int) pageable.getOffset();
+        int end = Math.min((start + pageable.getPageSize()), myPosts.size());
+        return new PageImpl<>(myPosts.subList(start, end), pageable, myPosts.size());
+    }
+
+
 }
