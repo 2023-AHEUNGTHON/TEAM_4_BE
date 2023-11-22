@@ -1,13 +1,15 @@
 package aheung.likelion.twoneone.domain.community;
 
 import aheung.likelion.twoneone.domain.common.BaseTimeEntity;
+import aheung.likelion.twoneone.domain.enums.Category;
 import aheung.likelion.twoneone.domain.user.User;
 import java.util.List;
+import javax.persistence.EnumType;
+import javax.persistence.Enumerated;
 import javax.persistence.FetchType;
 import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
 import javax.persistence.OneToMany;
-import javax.persistence.OneToOne;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -33,9 +35,13 @@ public class Post extends BaseTimeEntity {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     Long id;
 
+    @Enumerated(EnumType.STRING)
+    Category category;
+
     String title;
 
-    String content;
+    String memo;
+    String link;
 
     boolean share;
 

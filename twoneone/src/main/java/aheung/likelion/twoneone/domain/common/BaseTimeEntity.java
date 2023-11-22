@@ -1,5 +1,6 @@
 package aheung.likelion.twoneone.domain.common;
 
+import java.time.format.DateTimeFormatter;
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.Setter;
@@ -31,5 +32,9 @@ public abstract class BaseTimeEntity {
     @PreUpdate
     public void preUpdate() {
         updatedAt = ZonedDateTime.now();
+    }
+
+    public String getCreatedAtToString() {
+        return createdAt.format(DateTimeFormatter.ofPattern("yyyy.MM.dd HH:mm:ss"));
     }
 }
