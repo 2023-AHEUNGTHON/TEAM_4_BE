@@ -1,10 +1,10 @@
 package aheung.likelion.twoneone.service;
 
 import aheung.likelion.twoneone.domain.common.File;
-import aheung.likelion.twoneone.dto.FileReturnDto;
+import aheung.likelion.twoneone.dto.file.FileReturnDto;
+import aheung.likelion.twoneone.dto.file.FileListReturnDto;
 import aheung.likelion.twoneone.repository.FileRepository;
 import aheung.likelion.twoneone.util.S3Uploader;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
@@ -34,4 +34,16 @@ public class FileServiceImpl implements FileService {
                     .build());
         }
     }
+
+    @Override
+    public FileListReturnDto getFiles(String table, Long id) {
+
+        return FileListReturnDto.builder()
+                .files(fileRepository.findByTargetTableAndTargetId(table, id).stream()
+                        .map(FileReturnDto::toDto)
+                        .collect(Collectors.toList()))
+                .build();
+    }
+
+
 }
