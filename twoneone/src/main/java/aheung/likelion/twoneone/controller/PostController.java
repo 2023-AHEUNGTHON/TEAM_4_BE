@@ -1,6 +1,7 @@
 package aheung.likelion.twoneone.controller;
 
 import aheung.likelion.twoneone.dto.common.ReturnDto;
+import aheung.likelion.twoneone.dto.community.PostDetailReturnDto;
 import aheung.likelion.twoneone.dto.community.PostListReturnDto;
 import aheung.likelion.twoneone.dto.community.PostRequestDto;
 import aheung.likelion.twoneone.service.PostService;
@@ -46,5 +47,10 @@ public class PostController {
                                                                @RequestParam(name = "user_id") Long userId,
                                                                @PageableDefault(size = 12) Pageable pageable) {
         return ReturnDto.ok(postService.getMySearchPosts(pageable, keyword, userId));
+    }
+
+    @GetMapping("/posts/{postId}")
+    public ReturnDto<PostDetailReturnDto> getPost(@PathVariable Long postId) {
+        return ReturnDto.ok(postService.getPost(postId));
     }
 }

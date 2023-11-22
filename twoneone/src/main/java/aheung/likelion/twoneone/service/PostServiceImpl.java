@@ -6,6 +6,7 @@ import aheung.likelion.twoneone.domain.community.Tag;
 import aheung.likelion.twoneone.domain.enums.Category;
 import aheung.likelion.twoneone.domain.enums.Tags;
 import aheung.likelion.twoneone.domain.user.User;
+import aheung.likelion.twoneone.dto.community.PostDetailReturnDto;
 import aheung.likelion.twoneone.dto.file.FileListReturnDto;
 import aheung.likelion.twoneone.dto.community.PostListReturnDto;
 import aheung.likelion.twoneone.dto.community.PostRequestDto;
@@ -43,6 +44,12 @@ public class PostServiceImpl implements PostService {
 
     private Tag findTag(String tagName) {
         return tagRepository.findByName(tagName).orElseThrow(() -> {
+                    throw new IllegalArgumentException();
+                }
+        );
+    }
+    private Post findPost(Long postId) {
+        return postRepository.findById(postId).orElseThrow(() -> {
                     throw new IllegalArgumentException();
                 }
         );
@@ -118,6 +125,13 @@ public class PostServiceImpl implements PostService {
         int start = (int) pageable.getOffset();
         int end = Math.min((start + pageable.getPageSize()), myPosts.size());
         return new PageImpl<>(myPosts.subList(start, end), pageable, myPosts.size());
+    }
+
+    @Override
+    public PostDetailReturnDto getPost(Long postId) {
+        Post post = findPost(postId);
+        FileListReturnDto files = fileService.getFiles("post", post.getId());
+        return PostDetailReturnDto.toDto(post, files);
     }
 
 
