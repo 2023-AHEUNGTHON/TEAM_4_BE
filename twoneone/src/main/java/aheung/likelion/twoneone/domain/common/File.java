@@ -26,9 +26,8 @@ public class File extends BaseTimeEntity {
     Long id;
 
     String targetTable;
-    String targetId;
+    Long targetId;
     String type;
-    int size;
-    String originalName;
-    String storeName;
+    Long size;
+    String url;
 }
