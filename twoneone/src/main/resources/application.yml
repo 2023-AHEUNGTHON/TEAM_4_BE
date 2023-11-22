@@ -16,9 +16,12 @@ spring:
     properties:
       hibernate.format_sql: true
       dialect: org.hibernate.dialect.MySQL8InnoDBDialect
-
+    defer-datasource-initialization: true # init.sql
   profiles:
     include: secret
+  sql:
+    init:
+      mode: always
 
 logging:
   level:

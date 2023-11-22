@@ -38,3 +38,4 @@ out/
 
 ### Secret Key ###
 src/main/resources/application-secret.properties
+src/main/resources/sql/init.sql
