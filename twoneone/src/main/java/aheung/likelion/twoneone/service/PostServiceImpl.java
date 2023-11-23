@@ -147,4 +147,15 @@ public class PostServiceImpl implements PostService {
         postRepository.save(post);
     }
 
+    @Transactional
+    @Override
+    public void deletePost(Long postId) {
+        Post post = findPost(postId);
+
+        fileService.deleteFiles("post", post.getId());
+        List<PostTag> postTags = postTagRepository.findByPost(post);
+
+        postTagRepository.deleteAll(postTags);
+        postRepository.delete(post);
+    }
 }
