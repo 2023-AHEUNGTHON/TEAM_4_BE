@@ -1,6 +1,6 @@
 package aheung.likelion.twoneone.security;
 
-import aheung.likelion.twoneone.domain.entity.User;
+import aheung.likelion.twoneone.domain.user.User;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;

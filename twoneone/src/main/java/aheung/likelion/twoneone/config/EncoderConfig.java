@@ -1,4 +1,4 @@
-package aheung.likelion.twoneone.configuration;
+package aheung.likelion.twoneone.config;
 
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;

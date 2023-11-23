@@ -1,6 +1,6 @@
 package aheung.likelion.twoneone.controller;
 
-import aheung.likelion.twoneone.domain.dto.UserLoginRequest;
+import aheung.likelion.twoneone.dto.user.UserLoginRequest;
 import aheung.likelion.twoneone.exception.AppException;
 import aheung.likelion.twoneone.exception.ErrorCode;
 import aheung.likelion.twoneone.service.UserService;

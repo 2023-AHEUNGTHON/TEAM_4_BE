@@ -1,6 +1,6 @@
 package aheung.likelion.twoneone.service;
 
-import aheung.likelion.twoneone.domain.entity.User;
+import aheung.likelion.twoneone.domain.user.User;
 import aheung.likelion.twoneone.exception.AppException;
 import aheung.likelion.twoneone.exception.ErrorCode;
 import aheung.likelion.twoneone.repository.UserRepository;

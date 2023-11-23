@@ -1,4 +1,4 @@
-package aheung.likelion.twoneone.domain.entity;
+package aheung.likelion.twoneone.domain.user;
 
 import aheung.likelion.twoneone.domain.enums.Role;
 import lombok.*;

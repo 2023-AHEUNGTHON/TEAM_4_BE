@@ -1,4 +1,4 @@
-package aheung.likelion.twoneone.configuration;
+package aheung.likelion.twoneone.config;
 
 import aheung.likelion.twoneone.security.CustomUserDetailsService;
 import aheung.likelion.twoneone.security.filter.JwtExceptionFilter;

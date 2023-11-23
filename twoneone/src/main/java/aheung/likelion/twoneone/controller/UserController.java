@@ -1,8 +1,8 @@
 package aheung.likelion.twoneone.controller;
 
-import aheung.likelion.twoneone.domain.dto.UserJoinRequest;
-import aheung.likelion.twoneone.domain.dto.UserLoginRequest;
-import aheung.likelion.twoneone.domain.dto.UserUpdateRequest;
+import aheung.likelion.twoneone.dto.user.UserJoinRequest;
+import aheung.likelion.twoneone.dto.user.UserLoginRequest;
+import aheung.likelion.twoneone.dto.user.UserUpdateRequest;
 import aheung.likelion.twoneone.service.UserService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;

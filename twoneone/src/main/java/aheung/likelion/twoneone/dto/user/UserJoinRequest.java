@@ -1,4 +1,4 @@
-package aheung.likelion.twoneone.domain.dto;
+package aheung.likelion.twoneone.dto.user;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;

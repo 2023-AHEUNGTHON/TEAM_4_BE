@@ -1,6 +1,6 @@
 package aheung.likelion.twoneone.security;
 
-import aheung.likelion.twoneone.domain.entity.User;
+import aheung.likelion.twoneone.domain.user.User;
 import aheung.likelion.twoneone.repository.UserRepository;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UserDetails;
