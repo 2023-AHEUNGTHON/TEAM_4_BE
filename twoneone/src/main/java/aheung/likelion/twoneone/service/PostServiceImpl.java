@@ -15,6 +15,7 @@ import aheung.likelion.twoneone.repository.TagRepository;
 import aheung.likelion.twoneone.repository.UserRepository;
 import aheung.likelion.twoneone.repository.PostRepository;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
@@ -92,7 +93,7 @@ public class PostServiceImpl implements PostService {
     public Page<PostListReturnDto> getMyPosts(Pageable pageable, String category, String tagName, Long userId) {
         User user = findUser(userId);
         Tag tag = findTag(tagName);
-        List<Post> posts = postRepository.getPostByCategoryAndUser(Category.from(category), user);
+        List<Post> posts = postRepository.getPostByCategoryAndUser(Category.from(category), user, pageable.getSort());
 
         List<PostListReturnDto> myPosts = new ArrayList<>();
         for (Post post : posts) {
@@ -114,7 +115,7 @@ public class PostServiceImpl implements PostService {
     public Page<PostListReturnDto> getMySearchPosts(Pageable pageable, String keyword, Long userId) {
         User user = findUser(userId);
 
-        List<Post> posts = postRepository.getPostByTitleContainingAndUser(keyword, user);
+        List<Post> posts = postRepository.getPostByTitleContainingAndUser(keyword, user, pageable.getSort());
         List<PostListReturnDto> myPosts = new ArrayList<>();
         for (Post post : posts) {
             FileListDto files = fileService.getFiles("post", post.getId());
