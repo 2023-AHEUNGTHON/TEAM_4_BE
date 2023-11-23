@@ -1,5 +1,6 @@
 package aheung.likelion.twoneone.util;
 
+import aheung.likelion.twoneone.dto.file.FileListDto;
 import com.amazonaws.services.s3.AmazonS3;
 import com.amazonaws.services.s3.model.CannedAccessControlList;
 import com.amazonaws.services.s3.model.ObjectMetadata;
@@ -12,6 +13,7 @@ import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
+import org.springframework.util.StringUtils;
 import org.springframework.web.multipart.MultipartException;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -43,7 +45,8 @@ public class S3Uploader {
     }
 
     private String uploadS3(MultipartFile file) {
-        String filename = createFileName(file.getOriginalFilename());
+        // TODO : 원본 파일 이름 추가시 인코딩 디코딩 ?
+        String filename = createFileName();
 
         ObjectMetadata metadata = new ObjectMetadata();
         metadata.setContentType(file.getContentType());
@@ -59,7 +62,13 @@ public class S3Uploader {
         return amazonS3.getUrl(bucket, filename).toString();
     }
 
-    private String createFileName(String originalFileName) {
-        return UUID.randomUUID() + "_" + originalFileName;
+    public void deleteFile(String url) {
+        if(StringUtils.hasText(url)) {
+            String key = url.replace(amazonS3.getUrl(bucket, "").toString(), "").substring(1);
+            amazonS3.deleteObject(bucket, key);
+         }
+    }
+    private String createFileName() {
+        return UUID.randomUUID().toString();
     }
 }

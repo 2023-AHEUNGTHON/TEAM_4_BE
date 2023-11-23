@@ -1,8 +1,8 @@
 package aheung.likelion.twoneone.service;
 
 import aheung.likelion.twoneone.domain.common.File;
-import aheung.likelion.twoneone.dto.file.FileReturnDto;
-import aheung.likelion.twoneone.dto.file.FileListReturnDto;
+import aheung.likelion.twoneone.dto.file.FileDto;
+import aheung.likelion.twoneone.dto.file.FileListDto;
 import aheung.likelion.twoneone.repository.FileRepository;
 import aheung.likelion.twoneone.util.S3Uploader;
 import java.util.List;
@@ -35,14 +35,28 @@ public class FileServiceImpl implements FileService {
         }
     }
 
+    @Transactional
     @Override
-    public FileListReturnDto getFiles(String table, Long id) {
+    public FileListDto getFiles(String table, Long id) {
 
-        return FileListReturnDto.builder()
+        return FileListDto.builder()
                 .files(fileRepository.findByTargetTableAndTargetId(table, id).stream()
-                        .map(FileReturnDto::toDto)
+                        .map(FileDto::toDto)
                         .collect(Collectors.toList()))
                 .build();
+    }
+
+    @Transactional
+    @Override
+    public void deleteFiles(String table, Long id) {
+        List<File> oldFiles = fileRepository.findByTargetTableAndTargetId(table, id);
+
+        for(File file : oldFiles) {
+            // TODO : S3 파일 삭제 안되는 것 수정해야 함
+            fileUploader.deleteFile(file.getUrl());
+        }
+
+        fileRepository.deleteAll(oldFiles);
     }
 
 
