@@ -137,7 +137,7 @@ public class PostServiceImpl implements PostService {
 
     @Transactional
     @Override
-    public void updatePost(PostRequestDto dto, List<MultipartFile> files, Long postId, Long userId) {
+    public void updatePost(PostRequestDto dto, List<MultipartFile> files, Long postId) {
         Post post = findPost(postId);
         fileService.deleteFiles("post", post.getId());
 

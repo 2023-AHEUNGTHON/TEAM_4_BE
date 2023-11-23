@@ -13,5 +13,5 @@ public interface PostService {
     public Page<PostListReturnDto> getMyPosts(Pageable pageable, String category, String tag, Long userId);
     public Page<PostListReturnDto> getMySearchPosts(Pageable pageable, String keyword, Long userId);
     public PostDetailReturnDto getPost(Long postId);
-    public void updatePost(PostRequestDto dto, List<MultipartFile> files, Long postId, Long userId);
+    public void updatePost(PostRequestDto dto, List<MultipartFile> files, Long postId);
 }

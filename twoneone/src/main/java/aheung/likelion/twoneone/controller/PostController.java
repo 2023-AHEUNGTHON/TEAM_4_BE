@@ -58,9 +58,8 @@ public class PostController {
     @PutMapping("/posts/{postId}")
     public ReturnDto<Void> updatePost(@RequestPart PostRequestDto dto,
                                       @RequestPart(required = false) List<MultipartFile> files,
-                                      @PathVariable Long postId,
-                                      @RequestParam(name = "user_id") Long userId) {
-        postService.updatePost(dto, files, postId, userId);
+                                      @PathVariable Long postId) {
+        postService.updatePost(dto, files, postId);
         return ReturnDto.ok();
     }
 
