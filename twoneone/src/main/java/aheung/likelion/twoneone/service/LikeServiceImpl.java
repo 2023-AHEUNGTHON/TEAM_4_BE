@@ -51,8 +51,8 @@ public class LikeServiceImpl implements LikeService {
         User user = findUser(AuthUtil.getAuthUser());
         Post post = findPost(postId);
 
-        if (!post.getUser().equals(user)) {
-            throw new AppException(ErrorCode.FORBIDDEN, "Create PostLike");
+        if (post.getUser().equals(user)) {
+            throw new AppException(ErrorCode.BAD_REQUEST, "Create PostLike");
         }
 
         if (postLikeRepository.existsByPostAndUser(post, user)) {
@@ -75,12 +75,12 @@ public class LikeServiceImpl implements LikeService {
         User user = findUser(AuthUtil.getAuthUser());
         Post post = findPost(postId);
 
-        if (!post.getUser().equals(user)) {
-            throw new AppException(ErrorCode.FORBIDDEN, "Delete PostLike");
+        if (post.getUser().equals(user)) {
+            throw new AppException(ErrorCode.BAD_REQUEST, "Delete PostLike");
         }
 
         PostLike like = postLikeRepository.findByPostAndUser(post, user)
-                .orElseThrow(() -> new AppException(ErrorCode.NOT_FOUND, "GET Post Like"));
+                .orElseThrow(() -> new AppException(ErrorCode.BAD_REQUEST, "GET Post Like"));
 
         postLikeRepository.delete(like);
 
