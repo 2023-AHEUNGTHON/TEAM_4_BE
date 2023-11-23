@@ -51,6 +51,12 @@ public class PostController {
         return ReturnDto.ok(postService.getMySearchPosts(pageable, keyword, userId));
     }
 
+    @GetMapping("/posts")
+    public ReturnDto<Page<PostListReturnDto>> getPosts(@RequestParam(required = false) String keyword,
+                                                       @PageableDefault(size = 12) Pageable pageable) {
+        return ReturnDto.ok(postService.getPosts(pageable, keyword));
+    }
+
     @GetMapping("/posts/{postId}")
     public ReturnDto<PostDetailReturnDto> getPost(@PathVariable Long postId) {
         return ReturnDto.ok(postService.getPost(postId));

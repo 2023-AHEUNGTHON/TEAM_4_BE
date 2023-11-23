@@ -17,6 +17,7 @@ import aheung.likelion.twoneone.repository.PostRepository;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
@@ -115,11 +116,26 @@ public class PostServiceImpl implements PostService {
     public Page<PostListReturnDto> getMySearchPosts(Pageable pageable, String keyword, Long userId) {
         User user = findUser(userId);
 
-        List<Post> posts = postRepository.getPostByTitleContainingAndUser(keyword, user, pageable.getSort());
-        List<PostListReturnDto> myPosts = new ArrayList<>();
-        for (Post post : posts) {
-            FileListDto files = fileService.getFiles("post", post.getId());
-            myPosts.add(PostListReturnDto.toDto(post, files.getThumbnail()));
+        List<PostListReturnDto> myPosts = getPostsWithFile(postRepository
+                .getPostByTitleContainingAndUser(keyword, user, pageable.getSort()));
+
+        // List -> Page
+        int start = (int) pageable.getOffset();
+        int end = Math.min((start + pageable.getPageSize()), myPosts.size());
+        return new PageImpl<>(myPosts.subList(start, end), pageable, myPosts.size());
+    }
+
+    @Transactional
+    @Override
+    public Page<PostListReturnDto> getPosts(Pageable pageable, String keyword) {
+        List<PostListReturnDto> myPosts;
+
+        if (keyword != null) {
+            myPosts = getPostsWithFile(postRepository
+                    .getPostByTitleContainingAndShareIsTrue(keyword, pageable.getSort()));
+        } else {
+            myPosts = getPostsWithFile(postRepository
+                    .getPostByShareIsTrue(pageable.getSort()));
         }
 
         // List -> Page
@@ -158,5 +174,12 @@ public class PostServiceImpl implements PostService {
 
         postTagRepository.deleteAll(postTags);
         postRepository.delete(post);
+    }
+
+    private List<PostListReturnDto> getPostsWithFile(List<Post> posts) {
+        return posts.stream().map(post -> {
+            FileListDto files = fileService.getFiles("post", post.getId());
+            return PostListReturnDto.toDto(post, files.getThumbnail());
+        }).collect(Collectors.toList());
     }
 }
