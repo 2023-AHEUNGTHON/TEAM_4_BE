@@ -7,7 +7,7 @@ import aheung.likelion.twoneone.domain.enums.Category;
 import aheung.likelion.twoneone.domain.enums.Tags;
 import aheung.likelion.twoneone.domain.user.User;
 import aheung.likelion.twoneone.dto.community.PostDetailReturnDto;
-import aheung.likelion.twoneone.dto.file.FileListReturnDto;
+import aheung.likelion.twoneone.dto.file.FileListDto;
 import aheung.likelion.twoneone.dto.community.PostListReturnDto;
 import aheung.likelion.twoneone.dto.community.PostRequestDto;
 import aheung.likelion.twoneone.repository.PostTagRepository;
@@ -16,7 +16,6 @@ import aheung.likelion.twoneone.repository.UserRepository;
 import aheung.likelion.twoneone.repository.PostRepository;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Timer;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
@@ -97,7 +96,7 @@ public class PostServiceImpl implements PostService {
 
         List<PostListReturnDto> myPosts = new ArrayList<>();
         for (Post post : posts) {
-            FileListReturnDto files = fileService.getFiles("post", post.getId());
+            FileListDto files = fileService.getFiles("post", post.getId());
             if (postTagRepository.existsByPostAndTag(post, tag)) {
                 myPosts.add(PostListReturnDto.toDto(post, files.getThumbnail()));
             }
@@ -110,6 +109,7 @@ public class PostServiceImpl implements PostService {
         return new PageImpl<>(myPosts.subList(start, end), pageable, myPosts.size());
     }
 
+    @Transactional
     @Override
     public Page<PostListReturnDto> getMySearchPosts(Pageable pageable, String keyword, Long userId) {
         User user = findUser(userId);
@@ -117,7 +117,7 @@ public class PostServiceImpl implements PostService {
         List<Post> posts = postRepository.getPostByTitleContainingAndUser(keyword, user);
         List<PostListReturnDto> myPosts = new ArrayList<>();
         for (Post post : posts) {
-            FileListReturnDto files = fileService.getFiles("post", post.getId());
+            FileListDto files = fileService.getFiles("post", post.getId());
             myPosts.add(PostListReturnDto.toDto(post, files.getThumbnail()));
         }
 
@@ -127,12 +127,24 @@ public class PostServiceImpl implements PostService {
         return new PageImpl<>(myPosts.subList(start, end), pageable, myPosts.size());
     }
 
+    @Transactional
     @Override
     public PostDetailReturnDto getPost(Long postId) {
         Post post = findPost(postId);
-        FileListReturnDto files = fileService.getFiles("post", post.getId());
+        FileListDto files = fileService.getFiles("post", post.getId());
         return PostDetailReturnDto.toDto(post, files);
     }
 
+    @Transactional
+    @Override
+    public void updatePost(PostRequestDto dto, List<MultipartFile> files, Long postId, Long userId) {
+        Post post = findPost(postId);
+        fileService.deleteFiles("post", post.getId());
+
+        post.updatePost(dto);
+        fileService.createFiles("post", post.getId(), files);
+
+        postRepository.save(post);
+    }
 
 }

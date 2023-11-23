@@ -3,6 +3,7 @@ package aheung.likelion.twoneone.domain.community;
 import aheung.likelion.twoneone.domain.common.BaseTimeEntity;
 import aheung.likelion.twoneone.domain.enums.Category;
 import aheung.likelion.twoneone.domain.user.User;
+import aheung.likelion.twoneone.dto.community.PostRequestDto;
 import java.util.List;
 import javax.persistence.EnumType;
 import javax.persistence.Enumerated;
@@ -54,4 +55,12 @@ public class Post extends BaseTimeEntity {
 
     @OneToMany(mappedBy = "post")
     List<PostTag> postTags;
+
+    public void updatePost(PostRequestDto dto) {
+        this.category = dto.getCategory() != null ? Category.from(dto.getCategory()) : this.category;
+        this.title = dto.getTitle() != null ? dto.getTitle() : this.getTitle();
+        this.memo = dto.getMemo() != null ? dto.getMemo() : this.getMemo();
+        this.link = dto.getLink() != null ? dto.getLink() : this.getLink();
+        this.share = dto.isShare();
+    }
 }

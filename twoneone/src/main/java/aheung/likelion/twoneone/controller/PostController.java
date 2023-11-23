@@ -13,6 +13,7 @@ import org.springframework.data.web.PageableDefault;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RequestPart;
@@ -37,7 +38,7 @@ public class PostController {
     public ReturnDto<Page<PostListReturnDto>> getMyPosts(@PathVariable String category,
                                                          @RequestParam String tag,
                                                          @RequestParam(name = "user_id") Long userId,
-                                                         @PageableDefault(size = 12) Pageable pageable){
+                                                         @PageableDefault(size = 12) Pageable pageable) {
 
         return ReturnDto.ok(postService.getMyPosts(pageable, category, tag, userId));
     }
@@ -53,4 +54,14 @@ public class PostController {
     public ReturnDto<PostDetailReturnDto> getPost(@PathVariable Long postId) {
         return ReturnDto.ok(postService.getPost(postId));
     }
+
+    @PutMapping("/posts/{postId}")
+    public ReturnDto<Void> updatePost(@RequestPart PostRequestDto dto,
+                                      @RequestPart(required = false) List<MultipartFile> files,
+                                      @PathVariable Long postId,
+                                      @RequestParam(name = "user_id") Long userId) {
+        postService.updatePost(dto, files, postId, userId);
+        return ReturnDto.ok();
+    }
+
 }
