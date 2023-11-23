@@ -5,6 +5,7 @@ import aheung.likelion.twoneone.domain.enums.Category;
 import aheung.likelion.twoneone.domain.user.User;
 import aheung.likelion.twoneone.dto.community.PostRequestDto;
 import java.util.List;
+import javax.persistence.Column;
 import javax.persistence.EnumType;
 import javax.persistence.Enumerated;
 import javax.persistence.FetchType;
@@ -42,9 +43,13 @@ public class Post extends BaseTimeEntity {
     String title;
 
     String memo;
+
     String link;
 
     boolean share;
+
+    @Column(columnDefinition = "integer default 0")
+    int likes;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "user_id")
@@ -62,5 +67,11 @@ public class Post extends BaseTimeEntity {
         this.memo = dto.getMemo() != null ? dto.getMemo() : this.getMemo();
         this.link = dto.getLink() != null ? dto.getLink() : this.getLink();
         this.share = dto.isShare();
+    }
+
+    public void updateLikes(int likes) {
+        if (0 <= likes) {
+            this.likes = likes;
+        }
     }
 }

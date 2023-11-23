@@ -18,16 +18,20 @@ public class PostDetailReturnDto {
     private String title;
     private String memo;
     private String link;
+    private int likes;
+    private boolean likeStatus;
     private List<FileDto> files;
     private String createdAt;
 
-    public static PostDetailReturnDto toDto(Post post, FileListDto files) {
+    public static PostDetailReturnDto toDto(Post post, FileListDto files, boolean likeStatus) {
         return PostDetailReturnDto.builder()
                 .id(post.getId())
                 .category(post.getCategory())
                 .title(post.getTitle())
                 .memo(post.getMemo())
                 .link(post.getLink())
+                .likes(post.getLikes())
+                .likeStatus(likeStatus)
                 .createdAt(post.getCreatedAtToString())
                 .files(files.getFiles())
                 .build();

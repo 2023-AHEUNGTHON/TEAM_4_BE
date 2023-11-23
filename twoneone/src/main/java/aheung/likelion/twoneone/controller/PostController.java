@@ -53,13 +53,15 @@ public class PostController {
 
     @GetMapping("/posts")
     public ReturnDto<Page<PostListReturnDto>> getPosts(@RequestParam(required = false) String keyword,
+                                                       @RequestParam(name = "user_id") Long userId,
                                                        @PageableDefault(size = 12) Pageable pageable) {
-        return ReturnDto.ok(postService.getPosts(pageable, keyword));
+        return ReturnDto.ok(postService.getPosts(pageable, keyword, userId));
     }
 
     @GetMapping("/posts/{postId}")
-    public ReturnDto<PostDetailReturnDto> getPost(@PathVariable Long postId) {
-        return ReturnDto.ok(postService.getPost(postId));
+    public ReturnDto<PostDetailReturnDto> getPost(@PathVariable Long postId,
+                                                  @RequestParam(name = "user_id") Long userId) {
+        return ReturnDto.ok(postService.getPost(postId, userId));
     }
 
     @PutMapping("/posts/{postId}")

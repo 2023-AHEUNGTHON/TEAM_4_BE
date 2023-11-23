@@ -51,10 +51,15 @@ public class LikeServiceImpl implements LikeService {
         if (postLikeRepository.existsByPostAndUser(post, user)) {
             throw new UnsupportedOperationException();
         }
+
         postLikeRepository.save(PostLike.builder()
                 .post(post)
                 .user(user)
                 .build());
+
+        post.updateLikes(post.getLikes() + 1);
+
+        postRepository.save(post);
     }
 
     @Transactional
@@ -67,6 +72,10 @@ public class LikeServiceImpl implements LikeService {
                 .orElseThrow(() -> new NotFoundException("Not Found Post Like"));
 
         postLikeRepository.delete(like);
+
+        post.updateLikes(post.getLikes() - 1);
+
+        postRepository.save(post);
     }
 
     @Transactional
@@ -79,7 +88,7 @@ public class LikeServiceImpl implements LikeService {
         List<PostListReturnDto> posts = likes.stream().map(like -> {
             Post post = like.getPost();
             FileListDto files = fileService.getFiles("post", post.getId());
-            return PostListReturnDto.toDto(post, files.getThumbnail());
+            return PostListReturnDto.toDto(post, files.getThumbnail(), true);
         }).toList();
 
         // List -> Page

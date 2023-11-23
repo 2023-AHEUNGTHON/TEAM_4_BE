@@ -10,6 +10,7 @@ import aheung.likelion.twoneone.dto.community.PostDetailReturnDto;
 import aheung.likelion.twoneone.dto.file.FileListDto;
 import aheung.likelion.twoneone.dto.community.PostListReturnDto;
 import aheung.likelion.twoneone.dto.community.PostRequestDto;
+import aheung.likelion.twoneone.repository.PostLikeRepository;
 import aheung.likelion.twoneone.repository.PostTagRepository;
 import aheung.likelion.twoneone.repository.TagRepository;
 import aheung.likelion.twoneone.repository.UserRepository;
@@ -33,8 +34,10 @@ public class PostServiceImpl implements PostService {
     private final PostRepository postRepository;
     private final TagRepository tagRepository;
     private final PostTagRepository postTagRepository;
+    private final PostLikeRepository postLikeRepository;
     private final UserRepository userRepository;
     private final FileService fileService;
+
 
     private User findUser(Long userId) {
         return userRepository.findById(userId).orElseThrow(() -> {
@@ -100,7 +103,10 @@ public class PostServiceImpl implements PostService {
         for (Post post : posts) {
             FileListDto files = fileService.getFiles("post", post.getId());
             if (postTagRepository.existsByPostAndTag(post, tag)) {
-                myPosts.add(PostListReturnDto.toDto(post, files.getThumbnail()));
+                myPosts.add(PostListReturnDto.toDto(
+                        post,
+                        files.getThumbnail(),
+                        postLikeRepository.existsByPostAndUser(post, user)));
             }
 
         }
@@ -116,8 +122,10 @@ public class PostServiceImpl implements PostService {
     public Page<PostListReturnDto> getMySearchPosts(Pageable pageable, String keyword, Long userId) {
         User user = findUser(userId);
 
-        List<PostListReturnDto> myPosts = getPostsWithFile(postRepository
-                .getPostByTitleContainingAndUser(keyword, user, pageable.getSort()));
+        List<PostListReturnDto> myPosts = getPostsWithFile(
+                postRepository.getPostByTitleContainingAndUser(keyword, user, pageable.getSort()),
+                user
+        );
 
         // List -> Page
         int start = (int) pageable.getOffset();
@@ -127,15 +135,20 @@ public class PostServiceImpl implements PostService {
 
     @Transactional
     @Override
-    public Page<PostListReturnDto> getPosts(Pageable pageable, String keyword) {
-        List<PostListReturnDto> myPosts;
+    public Page<PostListReturnDto> getPosts(Pageable pageable, String keyword, Long userId) {
+        User user = findUser(userId);
 
+        List<PostListReturnDto> myPosts;
         if (keyword != null) {
-            myPosts = getPostsWithFile(postRepository
-                    .getPostByTitleContainingAndShareIsTrue(keyword, pageable.getSort()));
+            myPosts = getPostsWithFile(
+                    postRepository.getPostByTitleContainingAndShareIsTrue(keyword, pageable.getSort()),
+                    user
+            );
         } else {
-            myPosts = getPostsWithFile(postRepository
-                    .getPostByShareIsTrue(pageable.getSort()));
+            myPosts = getPostsWithFile(
+                    postRepository.getPostByShareIsTrue(pageable.getSort()),
+                    user
+            );
         }
 
         // List -> Page
@@ -146,10 +159,16 @@ public class PostServiceImpl implements PostService {
 
     @Transactional
     @Override
-    public PostDetailReturnDto getPost(Long postId) {
+    public PostDetailReturnDto getPost(Long postId, Long userId) {
         Post post = findPost(postId);
+        User user = findUser(userId);
+
         FileListDto files = fileService.getFiles("post", post.getId());
-        return PostDetailReturnDto.toDto(post, files);
+        return PostDetailReturnDto.toDto(
+                post,
+                files,
+                postLikeRepository.existsByPostAndUser(post, user)
+        );
     }
 
     @Transactional
@@ -176,10 +195,13 @@ public class PostServiceImpl implements PostService {
         postRepository.delete(post);
     }
 
-    private List<PostListReturnDto> getPostsWithFile(List<Post> posts) {
+    private List<PostListReturnDto> getPostsWithFile(List<Post> posts, User user) {
         return posts.stream().map(post -> {
             FileListDto files = fileService.getFiles("post", post.getId());
-            return PostListReturnDto.toDto(post, files.getThumbnail());
+            return PostListReturnDto.toDto(
+                    post,
+                    files.getThumbnail(),
+                    postLikeRepository.existsByPostAndUser(post, user));
         }).collect(Collectors.toList());
     }
 }
