@@ -1,17 +1,12 @@
 package aheung.likelion.twoneone.security;
 
 import aheung.likelion.twoneone.domain.enums.Role;
-import aheung.likelion.twoneone.exception.AppException;
-import aheung.likelion.twoneone.exception.ErrorCode;
 import io.jsonwebtoken.Claims;
-import io.jsonwebtoken.ExpiredJwtException;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.http.HttpStatus;
 
 import java.util.Date;
-import java.util.List;
 
 @Slf4j
 public class JwtTokenUtil {

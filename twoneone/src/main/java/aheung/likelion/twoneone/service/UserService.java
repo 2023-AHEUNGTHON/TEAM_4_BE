@@ -5,15 +5,11 @@ import aheung.likelion.twoneone.exception.AppException;
 import aheung.likelion.twoneone.exception.ErrorCode;
 import aheung.likelion.twoneone.repository.UserRepository;
 import aheung.likelion.twoneone.security.JwtTokenUtil;
-import io.jsonwebtoken.ExpiredJwtException;
-import io.jsonwebtoken.Jwts;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 
-import java.util.Date;
-import java.util.List;
 
 import static aheung.likelion.twoneone.domain.enums.Role.ROLE_USER;
 
@@ -94,8 +90,8 @@ public class UserService {
     }
 
     public String getAccessToken(String userName){
-        Long accessExpireTimeMs = 1000 * 60 * 60l;
-//        Long accessExpireTimeMs = 1000 * 60 * 1l;   //test
+        Long accessExpireTimeMs = 1000 * 60 * 60L;
+//        Long accessExpireTimeMs = 1000 * 60 * 1L;   //test
 
         User selectedUser = userRepository.findByUserName(userName)
                 .orElseThrow(()->new AppException(ErrorCode.USERNAME_NOT_FOUND, userName + "이 없습니다."));
@@ -106,8 +102,8 @@ public class UserService {
     }
 
     public String getRefreshToken(String userName){
-        Long refreshExpireTimeMs = 1000 *60 * 60 *24 *30l;
-//        Long refreshExpireTimeMs = 1000 *60 * 2l;   //test
+        Long refreshExpireTimeMs = 1000 *60 * 60 *24 *30L;
+//        Long refreshExpireTimeMs = 1000 *60 * 2L;   //test
 
         User selectedUser = userRepository.findByUserName(userName)
                 .orElseThrow(()->new AppException(ErrorCode.USERNAME_NOT_FOUND, userName + "이 없습니다."));
