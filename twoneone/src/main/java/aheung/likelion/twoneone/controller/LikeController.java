@@ -22,22 +22,19 @@ public class LikeController {
     private final LikeService likeService;
 
     @PostMapping("/likes/posts/{postId}")
-    public ReturnDto<Void> createPostLike(@PathVariable Long postId,
-                                          @RequestParam(name = "user_id") Long userId) {
-        likeService.createPostLike(postId, userId);
+    public ReturnDto<Void> createPostLike(@PathVariable Long postId) {
+        likeService.createPostLike(postId);
         return ReturnDto.ok();
     }
 
     @DeleteMapping("/likes/posts/{postId}")
-    public ReturnDto<Void> deletePostLike(@PathVariable Long postId,
-                                          @RequestParam(name = "user_id") Long userId) {
-        likeService.deletePostLike(postId, userId);
+    public ReturnDto<Void> deletePostLike(@PathVariable Long postId) {
+        likeService.deletePostLike(postId);
         return ReturnDto.ok();
     }
 
     @GetMapping("/likes/posts")
-    public ReturnDto<Page<PostListReturnDto>> getLikePosts(@RequestParam(name = "user_id") Long userId,
-                                                           @PageableDefault Pageable pageable) {
-        return ReturnDto.ok(likeService.getLikePosts(pageable, userId));
+    public ReturnDto<Page<PostListReturnDto>> getLikePosts(@PageableDefault Pageable pageable) {
+        return ReturnDto.ok(likeService.getLikePosts(pageable));
     }
 }

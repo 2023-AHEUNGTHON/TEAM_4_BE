@@ -29,39 +29,34 @@ public class PostController {
 
     @PostMapping("/posts")
     public ReturnDto<Void> createPost(@RequestPart PostRequestDto dto,
-                                      @RequestPart(required = false) List<MultipartFile> files,
-                                      @RequestParam(name = "user_id") Long userId) {
-        postService.createPost(dto, files, userId);
+                                      @RequestPart(required = false) List<MultipartFile> files) {
+        postService.createPost(dto, files);
         return ReturnDto.ok();
     }
 
     @GetMapping("/my/{category}/posts")
     public ReturnDto<Page<PostListReturnDto>> getMyPosts(@PathVariable String category,
                                                          @RequestParam String tag,
-                                                         @RequestParam(name = "user_id") Long userId,
                                                          @PageableDefault(size = 12) Pageable pageable) {
 
-        return ReturnDto.ok(postService.getMyPosts(pageable, category, tag, userId));
+        return ReturnDto.ok(postService.getMyPosts(pageable, category, tag));
     }
 
     @GetMapping("/my/posts")
     public ReturnDto<Page<PostListReturnDto>> getMySearchPosts(@RequestParam String keyword,
-                                                               @RequestParam(name = "user_id") Long userId,
                                                                @PageableDefault(size = 12) Pageable pageable) {
-        return ReturnDto.ok(postService.getMySearchPosts(pageable, keyword, userId));
+        return ReturnDto.ok(postService.getMySearchPosts(pageable, keyword));
     }
 
     @GetMapping("/posts")
     public ReturnDto<Page<PostListReturnDto>> getPosts(@RequestParam(required = false) String keyword,
-                                                       @RequestParam(name = "user_id") Long userId,
                                                        @PageableDefault(size = 12) Pageable pageable) {
-        return ReturnDto.ok(postService.getPosts(pageable, keyword, userId));
+        return ReturnDto.ok(postService.getPosts(pageable, keyword));
     }
 
     @GetMapping("/posts/{postId}")
-    public ReturnDto<PostDetailReturnDto> getPost(@PathVariable Long postId,
-                                                  @RequestParam(name = "user_id") Long userId) {
-        return ReturnDto.ok(postService.getPost(postId, userId));
+    public ReturnDto<PostDetailReturnDto> getPost(@PathVariable Long postId) {
+        return ReturnDto.ok(postService.getPost(postId));
     }
 
     @PutMapping("/posts/{postId}")

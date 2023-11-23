@@ -10,11 +10,14 @@ import aheung.likelion.twoneone.dto.community.PostDetailReturnDto;
 import aheung.likelion.twoneone.dto.file.FileListDto;
 import aheung.likelion.twoneone.dto.community.PostListReturnDto;
 import aheung.likelion.twoneone.dto.community.PostRequestDto;
+import aheung.likelion.twoneone.exception.AppException;
+import aheung.likelion.twoneone.exception.ErrorCode;
 import aheung.likelion.twoneone.repository.PostLikeRepository;
 import aheung.likelion.twoneone.repository.PostTagRepository;
 import aheung.likelion.twoneone.repository.TagRepository;
 import aheung.likelion.twoneone.repository.UserRepository;
 import aheung.likelion.twoneone.repository.PostRepository;
+import aheung.likelion.twoneone.util.AuthUtil;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -23,6 +26,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
+import org.springframework.security.access.AuthorizationServiceException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
@@ -39,9 +43,9 @@ public class PostServiceImpl implements PostService {
     private final FileService fileService;
 
 
-    private User findUser(Long userId) {
-        return userRepository.findById(userId).orElseThrow(() -> {
-                    throw new IllegalArgumentException();
+    private User findUser(String username) {
+        return userRepository.findByUserName(username).orElseThrow(() -> {
+                    throw new AppException(ErrorCode.NOT_FOUND, "GET User");
                 }
         );
     }
@@ -54,18 +58,17 @@ public class PostServiceImpl implements PostService {
     }
     private Post findPost(Long postId) {
         return postRepository.findById(postId).orElseThrow(() -> {
-                    throw new IllegalArgumentException();
+                    throw new AppException(ErrorCode.NOT_FOUND, "GET Post");
                 }
         );
     }
 
     @Transactional
     @Override
-    public void createPost(PostRequestDto dto, List<MultipartFile> files, Long userId) {
-        User user = findUser(userId);
+    public void createPost(PostRequestDto dto, List<MultipartFile> files) {
+        User user = findUser(AuthUtil.getAuthUser());
         Post post = postRepository.save(dto.toEntity(user));
 
-        // TODO : Post와 Tag 엮기
         if (files != null) {
             fileService.createFiles("post", post.getId(), files);
             Tag tag = findTag(Tags.FILE.getEn());
@@ -94,8 +97,8 @@ public class PostServiceImpl implements PostService {
 
     @Transactional
     @Override
-    public Page<PostListReturnDto> getMyPosts(Pageable pageable, String category, String tagName, Long userId) {
-        User user = findUser(userId);
+    public Page<PostListReturnDto> getMyPosts(Pageable pageable, String category, String tagName) {
+        User user = findUser(AuthUtil.getAuthUser());
         Tag tag = findTag(tagName);
         List<Post> posts = postRepository.getPostByCategoryAndUser(Category.from(category), user, pageable.getSort());
 
@@ -108,7 +111,6 @@ public class PostServiceImpl implements PostService {
                         files.getThumbnail(),
                         postLikeRepository.existsByPostAndUser(post, user)));
             }
-
         }
 
         // List -> Page
@@ -119,8 +121,8 @@ public class PostServiceImpl implements PostService {
 
     @Transactional
     @Override
-    public Page<PostListReturnDto> getMySearchPosts(Pageable pageable, String keyword, Long userId) {
-        User user = findUser(userId);
+    public Page<PostListReturnDto> getMySearchPosts(Pageable pageable, String keyword) {
+        User user = findUser(AuthUtil.getAuthUser());
 
         List<PostListReturnDto> myPosts = getPostsWithFile(
                 postRepository.getPostByTitleContainingAndUser(keyword, user, pageable.getSort()),
@@ -135,8 +137,8 @@ public class PostServiceImpl implements PostService {
 
     @Transactional
     @Override
-    public Page<PostListReturnDto> getPosts(Pageable pageable, String keyword, Long userId) {
-        User user = findUser(userId);
+    public Page<PostListReturnDto> getPosts(Pageable pageable, String keyword) {
+        User user = findUser(AuthUtil.getAuthUser());
 
         List<PostListReturnDto> myPosts;
         if (keyword != null) {
@@ -159,9 +161,9 @@ public class PostServiceImpl implements PostService {
 
     @Transactional
     @Override
-    public PostDetailReturnDto getPost(Long postId, Long userId) {
+    public PostDetailReturnDto getPost(Long postId) {
         Post post = findPost(postId);
-        User user = findUser(userId);
+        User user = findUser(AuthUtil.getAuthUser());
 
         FileListDto files = fileService.getFiles("post", post.getId());
         return PostDetailReturnDto.toDto(
@@ -175,6 +177,12 @@ public class PostServiceImpl implements PostService {
     @Override
     public void updatePost(PostRequestDto dto, List<MultipartFile> files, Long postId) {
         Post post = findPost(postId);
+        User user = findUser(AuthUtil.getAuthUser());
+
+        if (!post.getUser().equals(user)) {
+            throw new AppException(ErrorCode.FORBIDDEN, "Update Post");
+        }
+
         fileService.deleteFiles("post", post.getId());
 
         post.updatePost(dto);
@@ -187,6 +195,11 @@ public class PostServiceImpl implements PostService {
     @Override
     public void deletePost(Long postId) {
         Post post = findPost(postId);
+        User user = findUser(AuthUtil.getAuthUser());
+
+        if (!post.getUser().equals(user)) {
+            throw new AppException(ErrorCode.FORBIDDEN, "Delete Post");
+        }
 
         fileService.deleteFiles("post", post.getId());
         List<PostTag> postTags = postTagRepository.findByPost(post);
