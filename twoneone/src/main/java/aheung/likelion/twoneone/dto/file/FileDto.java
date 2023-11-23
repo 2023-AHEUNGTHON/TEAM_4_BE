@@ -7,15 +7,15 @@ import lombok.Data;
 
 @Data
 @Builder
-public class FileReturnDto {
+public class FileDto {
     private Long id;
     private Long size;
     private FileType type;
     private String url;
     private String createdAt;
 
-    public static FileReturnDto toDto(File file) {
-        return FileReturnDto.builder()
+    public static FileDto toDto(File file) {
+        return FileDto.builder()
                 .id(file.getId())
                 .size(file.getSize())
                 .type(FileType.from(file.getType()))
