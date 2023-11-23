@@ -1,9 +1,14 @@
 package aheung.likelion.twoneone.controller;
 
 import aheung.likelion.twoneone.dto.common.ReturnDto;
+import aheung.likelion.twoneone.dto.community.PostListReturnDto;
 import aheung.likelion.twoneone.service.LikeService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.web.PageableDefault;
 import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -28,5 +33,11 @@ public class LikeController {
                                           @RequestParam(name = "user_id") Long userId) {
         likeService.deletePostLike(postId, userId);
         return ReturnDto.ok();
+    }
+
+    @GetMapping("/likes/posts")
+    public ReturnDto<Page<PostListReturnDto>> getLikePosts(@RequestParam(name = "user_id") Long userId,
+                                                           @PageableDefault Pageable pageable) {
+        return ReturnDto.ok(likeService.getLikePosts(pageable, userId));
     }
 }
