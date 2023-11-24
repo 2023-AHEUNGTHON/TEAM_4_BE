@@ -42,9 +42,9 @@ public class User {
     private String password;
 
     @Column(nullable = false, unique = true)
-    private String email;
+    private String nickName;
 
-    private String profileImg;
+    private String profileImgUrl;
 
     @Column(nullable = false)
     @Enumerated(EnumType.STRING)
