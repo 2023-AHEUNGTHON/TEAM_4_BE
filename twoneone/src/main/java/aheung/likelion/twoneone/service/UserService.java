@@ -1,14 +1,18 @@
 package aheung.likelion.twoneone.service;
 
+import aheung.likelion.twoneone.domain.common.File;
 import aheung.likelion.twoneone.domain.user.User;
 import aheung.likelion.twoneone.exception.AppException;
 import aheung.likelion.twoneone.exception.ErrorCode;
+import aheung.likelion.twoneone.repository.FileRepository;
 import aheung.likelion.twoneone.repository.UserRepository;
 import aheung.likelion.twoneone.security.JwtTokenUtil;
+import aheung.likelion.twoneone.util.S3Uploader;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.web.multipart.MultipartFile;
 
 
 import static aheung.likelion.twoneone.domain.enums.Role.ROLE_USER;
@@ -19,6 +23,8 @@ public class UserService {
 
     private final UserRepository userRepository;
     private final BCryptPasswordEncoder encoder;
+    private final S3Uploader fileUploader;
+    private final FileRepository fileRepository;
 
     @Value("${jwt.token.secret}")
     private String acessKey; //secret key
@@ -26,7 +32,7 @@ public class UserService {
     @Value("${jwt.token.refresh}")
     private String refreshKey;
 
-    public String join(String userName, String password, String email){
+    public String join(String userName, String password, String nickName){
 
         // userName 중복 check
         userRepository.findByUserName(userName)
@@ -35,10 +41,10 @@ public class UserService {
                         }
                 );
 
-        // email 중복 check
-        userRepository.findByEmail(email)
+        // nickName 중복 check
+        userRepository.findByNickName(nickName)
                 .ifPresent(user -> {
-                            throw new AppException(ErrorCode.EMAIL_DUPLICATED, email + "는 이미 존재합니다.");
+                            throw new AppException(ErrorCode.NICKNAME_DUPLICATED, nickName + "는 이미 존재합니다.");
                         }
                 );
 
@@ -46,7 +52,7 @@ public class UserService {
         User user = User.builder()
                 .userName(userName)
                 .password(encoder.encode(password))
-                .email(email)
+                .nickName(nickName)
                 .role(ROLE_USER)
                 .build();
         userRepository.save(user);
@@ -73,20 +79,33 @@ public class UserService {
         return accessToken;
     }
 
-    public String updateUserName(String oldUserName, String newUserName) {
-        User user = userRepository.findByUserName(oldUserName)
-                .orElseThrow(() -> new AppException(ErrorCode.USERNAME_NOT_FOUND, oldUserName + "이 없습니다."));
+    public User updateUserName(String userName, String nickName) {
+        User user = userRepository.findByUserName(userName)
+                .orElseThrow(() -> new AppException(ErrorCode.USERNAME_NOT_FOUND, "사용자"+ userName + "이 없습니다."));
 
-        // userName 중복 check
-        userRepository.findByUserName(newUserName)
-                .ifPresent(thatUser -> {
-                            throw new AppException(ErrorCode.USERNAME_DUPLICATED, newUserName + "는 이미 존재합니다.");
+        // nickName 중복 check
+        userRepository.findByNickName(nickName)
+                .ifPresent(thatuser -> {
+                            throw new AppException(ErrorCode.NICKNAME_DUPLICATED, nickName + "는 이미 존재합니다.");
                         }
                 );
 
-        user.setUserName(newUserName);
+
+        user.setNickName(nickName);
         userRepository.save(user);
-        return user.getUserName();
+        return user;
+    }
+
+    public User updateProfileImg(MultipartFile file, String userName) {
+        User user = userRepository.findByUserName(userName)
+                .orElseThrow(() -> new AppException(ErrorCode.USERNAME_NOT_FOUND, "사용자" + userName + "이 없습니다."));
+
+        //s3 업로드 로직
+        String url = fileUploader.uploadFile(file);
+
+        user.setProfileImgUrl(url); //db에 url 저장
+        userRepository.save(user);
+        return user;
     }
 
     public String getAccessToken(String userName){
@@ -94,9 +113,9 @@ public class UserService {
 //        Long accessExpireTimeMs = 1000 * 60 * 1L;   //test
 
         User selectedUser = userRepository.findByUserName(userName)
-                .orElseThrow(()->new AppException(ErrorCode.USERNAME_NOT_FOUND, userName + "이 없습니다."));
+                .orElseThrow(()->new AppException(ErrorCode.USERNAME_NOT_FOUND, "사용자"+userName + "이 없습니다."));
 
-        String accessToken = JwtTokenUtil.createToken(userName, selectedUser.getRole(),acessKey, accessExpireTimeMs);
+        String accessToken = JwtTokenUtil.createToken(selectedUser.getUserName(), selectedUser.getRole(),acessKey, accessExpireTimeMs);
 
         return accessToken;
     }
@@ -108,7 +127,7 @@ public class UserService {
         User selectedUser = userRepository.findByUserName(userName)
                 .orElseThrow(()->new AppException(ErrorCode.USERNAME_NOT_FOUND, userName + "이 없습니다."));
 
-        String refreshToken = JwtTokenUtil.createToken(userName, selectedUser.getRole() ,refreshKey, refreshExpireTimeMs);
+        String refreshToken = JwtTokenUtil.createToken(selectedUser.getUserName(), selectedUser.getRole() ,refreshKey, refreshExpireTimeMs);
 
         return refreshToken;
     }

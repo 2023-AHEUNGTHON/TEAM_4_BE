@@ -1,14 +1,20 @@
 package aheung.likelion.twoneone.controller;
 
+import aheung.likelion.twoneone.domain.user.User;
+import aheung.likelion.twoneone.dto.common.ReturnDto;
 import aheung.likelion.twoneone.dto.user.UserJoinRequest;
 import aheung.likelion.twoneone.dto.user.UserLoginRequest;
-import aheung.likelion.twoneone.dto.user.UserUpdateRequest;
+import aheung.likelion.twoneone.dto.user.UserTokenReturnDto;
+import aheung.likelion.twoneone.exception.AppException;
+import aheung.likelion.twoneone.exception.ErrorCode;
+import aheung.likelion.twoneone.repository.UserRepository;
+import aheung.likelion.twoneone.security.CustomUserDetail;
 import aheung.likelion.twoneone.service.UserService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
 import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServletResponse;
@@ -21,16 +27,17 @@ import javax.servlet.http.HttpServletRequest;
 public class UserController {
 
     private final UserService userService;
+    private final UserRepository userRepository;
 
     @PostMapping("/join")
-    public ResponseEntity<String> join(@RequestBody UserJoinRequest dto){
-        userService.join(dto.getUserName(), dto.getPassword(), dto.getEmail());
-        return ResponseEntity.ok().body("회원가입 성공");
+    public ReturnDto<Void> join(@RequestBody UserJoinRequest dto){
+        userService.join(dto.getUserName(), dto.getPassword(), dto.getNickName());
+        return ReturnDto.ok();
     }
 
     @PostMapping("/login")
     @ResponseBody
-    public ResponseEntity<String> login(@RequestBody UserLoginRequest dto, HttpServletResponse response){
+    public ReturnDto<UserTokenReturnDto> login(@RequestBody UserLoginRequest dto, HttpServletResponse response){
         String accessToken = userService.login(dto.getUserName(), dto.getPassword());
 
         // Refresh Token 생성
@@ -49,25 +56,50 @@ public class UserController {
         // add cookie to response
         response.addCookie(cookie);
 
-        return ResponseEntity.ok().body(accessToken);
+        UserTokenReturnDto returnDto = UserTokenReturnDto.builder().token(accessToken).build();
+
+        return ReturnDto.ok(returnDto);
     }
 
-    @PutMapping("/update")
-    public ResponseEntity<String> update(@RequestBody UserUpdateRequest dto,Authentication authentication){
-        //현재 userName
-        String oldName = authentication.getName();
-        String updatedName = userService.updateUserName(oldName, dto.getUserName());
-        return ResponseEntity.ok().body("닉네임 변경 성공: " + updatedName);
+    @PutMapping("/updateNickName")
+    public ReturnDto<User> updateNickName(@RequestParam String nickName, Authentication authentication) {
 
+        // 현재 userName
+        String userName = authentication.getName();
+
+
+//        CustomUserDetail userDetails = (CustomUserDetail) authentication.getPrincipal();
+//        Long Id = userDetails.getId(); // 사용자 ID 추출
+
+        User user = userService.updateUserName(userName, nickName);
+
+        return ReturnDto.ok(user);
+    }
+
+    @PutMapping("/updateProfileImg")
+    public ReturnDto<User> updateProfileImg(@RequestPart MultipartFile file,
+                                                   Authentication authentication) {
+
+//        CustomUserDetail userDetails = (CustomUserDetail) authentication.getPrincipal();
+//        Long Id = userDetails.getId(); // 사용자 ID 추출
+
+        User user = userService.updateProfileImg(file, authentication.getName());
+        return ReturnDto.ok(user);
     }
 
     @GetMapping("/info")
-    public ResponseEntity<String> info(Authentication authentication){
-        return ResponseEntity.ok().body(authentication.getName());
+    public ReturnDto<User> info(Authentication authentication){
+        //userName 추출
+        String userName = authentication.getName();
+
+//        CustomUserDetail userDetails = (CustomUserDetail) authentication.getPrincipal();
+//        Long Id = userDetails.getId(); // 사용자 ID 추출
+        User user = userRepository.findByUserName(userName).orElseThrow(()->new AppException(ErrorCode.USERNAME_NOT_FOUND, "사용자" + userName + "이 없습니다."));
+        return ReturnDto.ok(user);
     }
 
     @PostMapping("/refresh")
-    public ResponseEntity<String> refresh (HttpServletRequest request){
+    public ReturnDto<UserTokenReturnDto> refresh (HttpServletRequest request){
 
         // 쿠키에서 Refresh Token 추출
         Cookie[] cookies = request.getCookies();
@@ -81,18 +113,19 @@ public class UserController {
 
         //userName 추출
         String userName = userService.getUserNameByRefreshToken(refreshToken);
-
+        String newAccessToken = null;
 
         log.info("refreshToken:{}",refreshToken);
         log.info("userName:{}",userName);
 
         if (userService.validateRefreshToken(refreshToken)) {
             // 새로운 Access Token 발급
-            String newAccessToken = userService.getAccessToken(userName);// 새로운 Access Token 생성 로직
-            return ResponseEntity.ok().body(newAccessToken);
-        } else {
-            return ResponseEntity.badRequest().body("토큰 인증에 실패했습니다.");
+            newAccessToken = userService.getAccessToken(userName);// 새로운 Access Token 생성 로직
         }
+
+        UserTokenReturnDto returnDto = UserTokenReturnDto.builder().token(newAccessToken).build();
+
+        return ReturnDto.ok(returnDto);
 
     }
 
