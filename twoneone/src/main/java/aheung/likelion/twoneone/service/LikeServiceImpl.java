@@ -5,9 +5,12 @@ import aheung.likelion.twoneone.domain.community.PostLike;
 import aheung.likelion.twoneone.domain.user.User;
 import aheung.likelion.twoneone.dto.community.PostListReturnDto;
 import aheung.likelion.twoneone.dto.file.FileListDto;
+import aheung.likelion.twoneone.exception.AppException;
+import aheung.likelion.twoneone.exception.ErrorCode;
 import aheung.likelion.twoneone.repository.PostLikeRepository;
 import aheung.likelion.twoneone.repository.PostRepository;
 import aheung.likelion.twoneone.repository.UserRepository;
+import aheung.likelion.twoneone.util.AuthUtil;
 import com.amazonaws.services.kms.model.NotFoundException;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -15,6 +18,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
+import org.springframework.security.access.AuthorizationServiceException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -27,29 +31,32 @@ public class LikeServiceImpl implements LikeService {
     private final PostRepository postRepository;
     private final FileService fileService;
 
-    private User findUser(Long userId) {
-        return userRepository.findById(userId).orElseThrow(() -> {
-                    throw new IllegalArgumentException();
+    private User findUser(String username) {
+        return userRepository.findByUserName(username).orElseThrow(() -> {
+                    throw new AppException(ErrorCode.NOT_FOUND, "GET User");
                 }
         );
     }
 
-
     private Post findPost(Long postId) {
         return postRepository.findById(postId).orElseThrow(() -> {
-                    throw new IllegalArgumentException();
+                    throw new AppException(ErrorCode.NOT_FOUND, "GET Post");
                 }
         );
     }
 
     @Transactional
     @Override
-    public void createPostLike(Long postId, Long userId) {
-        User user = findUser(userId);
+    public void createPostLike(Long postId) {
+        User user = findUser(AuthUtil.getAuthUser());
         Post post = findPost(postId);
 
+        if (post.getUser().equals(user)) {
+            throw new AppException(ErrorCode.BAD_REQUEST, "Create PostLike");
+        }
+
         if (postLikeRepository.existsByPostAndUser(post, user)) {
-            throw new UnsupportedOperationException();
+            throw new AppException(ErrorCode.BAD_REQUEST, "Create PostLike");
         }
 
         postLikeRepository.save(PostLike.builder()
@@ -64,12 +71,16 @@ public class LikeServiceImpl implements LikeService {
 
     @Transactional
     @Override
-    public void deletePostLike(Long postId, Long userId) {
-        User user = findUser(userId);
+    public void deletePostLike(Long postId) {
+        User user = findUser(AuthUtil.getAuthUser());
         Post post = findPost(postId);
 
+        if (post.getUser().equals(user)) {
+            throw new AppException(ErrorCode.BAD_REQUEST, "Delete PostLike");
+        }
+
         PostLike like = postLikeRepository.findByPostAndUser(post, user)
-                .orElseThrow(() -> new NotFoundException("Not Found Post Like"));
+                .orElseThrow(() -> new AppException(ErrorCode.BAD_REQUEST, "GET Post Like"));
 
         postLikeRepository.delete(like);
 
@@ -80,8 +91,8 @@ public class LikeServiceImpl implements LikeService {
 
     @Transactional
     @Override
-    public Page<PostListReturnDto> getLikePosts(Pageable pageable, Long userId) {
-        User user = findUser(userId);
+    public Page<PostListReturnDto> getLikePosts(Pageable pageable) {
+        User user = findUser(AuthUtil.getAuthUser());
 
         List<PostLike> likes = postLikeRepository.findByUser(user);
 
