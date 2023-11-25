@@ -109,7 +109,8 @@ public class UserService {
     }
 
     public String getAccessToken(String userName){
-        Long accessExpireTimeMs = 1000 * 60 * 60L;
+//        Long accessExpireTimeMs = 1000 * 60 * 60L;
+        Long accessExpireTimeMs = 1000 *60 * 60 *24 *30L;  //한달로 설정 시연 위해서
 //        Long accessExpireTimeMs = 1000 * 60 * 1L;   //test
 
         User selectedUser = userRepository.findByUserName(userName)
