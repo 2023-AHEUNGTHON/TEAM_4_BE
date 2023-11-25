@@ -52,7 +52,7 @@ public class PostServiceImpl implements PostService {
 
     private Tag findTag(String tagName) {
         return tagRepository.findByName(tagName).orElseThrow(() -> {
-                    throw new IllegalArgumentException();
+                    throw new AppException(ErrorCode.NOT_FOUND, "GET User");
                 }
         );
     }
