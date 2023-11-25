@@ -21,19 +21,4 @@ public class WebConfig implements WebMvcConfigurer {
                 .allowedMethods("GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS")
                 .allowCredentials(true); // 쿠키를 포함한 요청 허용
     }
-
-//    @Bean
-//    public FilterRegistrationBean<CorsFilter> corsFilterRegistrationBean() {
-//        CorsConfiguration config = new CorsConfiguration();
-//        config.setAllowCredentials(false);
-//        config.addAllowedOrigin("*");
-//        config.addAllowedHeader("*");
-//        config.addAllowedMethod("*");
-//        config.setMaxAge(6000L);
-//        UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
-//        source.registerCorsConfiguration("/**", config);
-//        FilterRegistrationBean<CorsFilter> filterBean = new FilterRegistrationBean<>(new CorsFilter(source));
-//        filterBean.setOrder(0);
-//        return filterBean;
-//    }
 }
