@@ -1,7 +1,7 @@
 spring:
   datasource:
     driver-class-name: com.mysql.cj.jdbc.Driver
-    url: jdbc:mysql://localhost:3306/twoneone?useSSL=false&serverTimezone=Asia/Seoul&characterEncoding=UTF8mb4
+    url: jdbc:mysql://database-twoneone.c7seqdy5lt2o.ap-northeast-2.rds.amazonaws.com:3306/twoneone?serverTimezone=Asia/Seoul&Unicode=true&character_set_server=utf8mb4
     username: root
     password: root1234
  
